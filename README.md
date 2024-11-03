@@ -1,6 +1,5 @@
 # quest_helper
-**Pentru a descarca, apasati pe butonul <>Code si dupa pe Download ZIP, sau pe butonul de mai jos**
-[![Button Example]][https://github.com/addrian-77/quest_helper/archive/refs/heads/main.zip]
+**Pentru a descarca, apasati pe butonul <>Code si dupa pe Download ZIP**
 #
 
 Acest mod functioneaza ca si mapa pe  M, pe care apar obiectele si este facut sa va ajute sa tineti evidenta obiectelor gasite.
