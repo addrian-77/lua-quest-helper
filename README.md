@@ -14,7 +14,7 @@ Acest mod functioneaza ca si mapa pe  M, pe care apar obiectele si este facut sa
 - **/resetmap** pentru a scoate **TOATE** punctele de pe harta
 
 > Arhiva contine si MoonLoader preinstalat, in caz ca nu il aveti. Mai aveti nevoie si de CLEO si Asi Loader
-> Modul map.lua a fost facut de linux1337, eu doar am adaugat comenzile /mk, /rmlast si am pus harta cu obiecte
+> Modul map.lua a fost facut de linux1337, eu doar am adaugat comenzile /mk, /rmlast /mapsize /togmap si am pus harta cu obiecte
 
 ### Instalare
 
