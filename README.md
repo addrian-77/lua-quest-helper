@@ -18,7 +18,7 @@ Acest mod functioneaza ca si mapa pe  M, pe care apar obiectele si este facut sa
 
 ### Instalare
 
-Pentru instalare, copiati tot continutul arhivei in folderul principal al jocului.
+Pentru instalare, copiati tot continutul arhivei 'mapa pe m quest + makers.rar' in folderul principal al jocului.
 
 ### Prezentare mod
 [![IMAGE ALT TEXT HERE](https://github.com/user-attachments/assets/3051119a-e42c-4f2b-9b55-f25940f76147)](https://www.youtube.com/watch?v=rQlOTXHsYWQ)
