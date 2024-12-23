@@ -7,7 +7,7 @@ Acest mod functioneaza ca si mapa pe  M, pe care apar obiectele si este facut sa
 ### **Lista cu comenzi:**
 
 - **/map** pentru a vedea harta cu obiecte
-- **/togmap** pentru ca mapa sa apara de pe tasta 'M'
+- **/togmap** pentru ca mapa sa apara de pe tasta 'M' (sau pentru a dezactiva functia asta)
 - **/mapsize <0-5>** pentru a redimensiona harta
 - **/mk** pentru a marca un obiect pe harta, la locatia in care se afla playerul
 - **/rmlast** pentru a scoate **ULTIMUL** punct de pe harta
