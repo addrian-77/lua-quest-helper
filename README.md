@@ -13,14 +13,15 @@ Acest mod functioneaza ca si mapa pe  M, pe care apar obiectele si este facut sa
 - **/rmlast** pentru a scoate **ULTIMUL** punct de pe harta
 - **/resetmap** pentru a scoate **TOATE** punctele de pe harta
 
-> Arhiva contine si MoonLoader preinstalat, in caz ca nu il aveti. Mai aveti nevoie si de CLEO si Asi Loader
-> Modul map.lua a fost facut de linux1337, eu doar am adaugat comenzile /mk, /rmlast /mapsize /togmap si am pus harta cu obiecte
+> Arhiva contine si MoonLoader preinstalat, in caz ca nu il aveti. Mai aveti nevoie si de CLEO si Asi Loader.
+>
+> Modul map.lua a fost facut de linux1337, eu doar am adaugat comenzile /mk, /rmlast /mapsize /togmap si am pus harta cu obiecte.
 
 ### Instalare
 
 Pentru instalare, copiati toate fisierele (MoonLoader, bass.dll, lua51.dll, MoonLoader.asi) in fisierul principal al jocului.
 
-### Prezentare mod
+### Prezentare mod (outdated)
 [![IMAGE ALT TEXT HERE](https://github.com/user-attachments/assets/3051119a-e42c-4f2b-9b55-f25940f76147)](https://www.youtube.com/watch?v=rQlOTXHsYWQ)
 
 <details>
@@ -76,6 +77,9 @@ colors[clr.Border]                 = baseColor
 local mapImagePath = getWorkingDirectory() .. "\\resource\\img\\map.png"
 local pointsFilePath = getWorkingDirectory() .. "\\resource\\cfg\\map_points.ini"
 local settingsFilePath = getWorkingDirectory() .. "\\resource\\cfg\\map_size.ini"
+local blipImagePath = getWorkingDirectory() .. "\\resource\\img\\blip.png"
+
+local blipTexture = nil
 
 local mapWidth, mapHeight
 local oldMapWidth, oldMapHeight = mapWidth, mapHeight 
@@ -89,6 +93,8 @@ local showMapKey = imgui.ImBool(false)
 local mapPoints = {}
 local isMapLoaded = false
 
+local enabledMap
+
 local mapTexture = nil
 
 function main()
@@ -100,7 +106,11 @@ function main()
     sampRegisterChatCommand("resetmap", resetMap)
     sampRegisterChatCommand("rmlast", removeLast)
     sampRegisterChatCommand("mk", markObject)
+    sampRegisterChatCommand("mk1", markObjectGreen)
+    sampRegisterChatCommand("mk2", markObjectYellow)
+    sampRegisterChatCommand("mk3", markObjectOrange)
     sampRegisterChatCommand("mapsize", resizeMap)
+    sampRegisterChatCommand("togmap", togMap)
 
     loadMapPoints()
     loadMapSettings()
@@ -111,8 +121,10 @@ function main()
 
         if isKeyDown(0x4D) and not sampIsChatInputActive() then  -- 'M' key
             showMapKey.v = true
+            imgui.ShowCursor = false
         else
             showMapKey.v = false
+            imgui.ShowCursor = true
         end
         
         if not isMapLoaded then
@@ -122,12 +134,26 @@ function main()
             else
                 isMapLoaded = true
             end
+            blipTexture = imgui.CreateTextureFromFile(blipImagePath)
+            if blipTexture == nil then
+                sampAddChatMessage("[SQH]: Failed to load blip.png", 0xFF0000)
+            end
         end
     end
 end
 
 function toggleMap()
     showMap.v = not showMap.v
+end
+
+function togMap()
+    enabledMap = not enabledMap
+    saveMapSettings()
+    if enabledMap == false then
+        sampAddChatMessage("[SQH]: Show on 'M' press {ff1900}Disabled", 0x36c797)
+    else
+        sampAddChatMessage("[SQH]: Show on 'M' press {1ed402}Enabled", 0x36c797)
+    end
 end
 
 function markObject()
@@ -140,13 +166,76 @@ function markObject()
         local yp = yn * (mapHeight - 1)
 
         sampAddChatMessage("[SQH]: Marked object at location: X: " .. string.format("%.2f", xp) .. " | Y: " .. string.format("%.2f", yp), 0x36c797)
-        local pos = {x = xp, y = yp }
+        local pos = {x = xp, y = yp, r = 1, g = 0, b = 0, a =1, facing = 0}
         table.insert(mapPoints, pos)
         saveMapPoints()
     else
         sampAddChatMessage("Error: Invalid coordinates received.", -1)
     end
 end
+
+function markObjectGreen(arg)
+    if #arg == 0 then
+        sampAddChatMessage("Syntax: /mk1 <-1 | 0 | 1>", -1)
+    else
+        local arg_int = tonumber(arg)
+        if arg_int == -1 or arg_int == 0 or arg_int == 1 then
+            local cx, cy, cz = getCharCoordinates(PLAYER_PED)
+            if cx and cy then
+                local xn = (cx + 3000) / 6000
+                local yn = (3000 - cy) / 6000
+                local xp = xn * (mapWidth - 1)
+                local yp = yn * (mapHeight - 1)
+
+                sampAddChatMessage("[SQH]: Marked object at location: X: " .. string.format("%.2f", xp) .. " | Y: " .. string.format("%.2f", yp), 0x36c797)
+                local pos = {x = xp, y = yp, r = 0.2823, g = 0.7921, b = 0.0274, a = 1, facing = arg_int}
+                table.insert(mapPoints, pos)
+                saveMapPoints()
+            else
+                sampAddChatMessage("Error: Invalid coordinates received.", -1)
+            end
+        else
+            sampAddChatMessage("Invalid value!", -1)
+        end
+    end
+end
+
+function markObjectYellow()
+    local cx, cy, cz = getCharCoordinates(PLAYER_PED)
+
+    if cx and cy then
+        local xn = (cx + 3000) / 6000
+        local yn = (3000 - cy) / 6000
+        local xp = xn * (mapWidth - 1)
+        local yp = yn * (mapHeight - 1)
+
+        sampAddChatMessage("[SQH]: Marked object at location: X: " .. string.format("%.2f", xp) .. " | Y: " .. string.format("%.2f", yp), 0x36c797)
+        local pos = {x = xp, y = yp, r = 1, g = 0.945, b = 0.3137, a = 1, facing = 0}
+        table.insert(mapPoints, pos)
+        saveMapPoints()
+    else
+        sampAddChatMessage("Error: Invalid coordinates received.", -1)
+    end
+end
+
+function markObjectOrange()
+    local cx, cy, cz = getCharCoordinates(PLAYER_PED)
+
+    if cx and cy then
+        local xn = (cx + 3000) / 6000
+        local yn = (3000 - cy) / 6000
+        local xp = xn * (mapWidth - 1)
+        local yp = yn * (mapHeight - 1)
+
+        sampAddChatMessage("[SQH]: Marked object at location: X: " .. string.format("%.2f", xp) .. " | Y: " .. string.format("%.2f", yp), 0x36c797)
+        local pos = {x = xp, y = yp, r = 1, g = 0.6156, b = 0, a = 1, facing = 0}
+        table.insert(mapPoints, pos)
+        saveMapPoints()
+    else
+        sampAddChatMessage("Error: Invalid coordinates received.", -1)
+    end
+end
+
 
 function resizeMap(arg)
     if #arg == 0 then
@@ -206,7 +295,8 @@ function saveMapSettings()
         map = {
             width = mapWidth,
             height = mapHeight,
-            radius = radius
+            radius = radius,
+            enabledMap = enabledMap
         }
     }
     inicfg.save(settingsData, settingsFilePath)
@@ -219,6 +309,7 @@ function loadMapSettings()
         mapWidth = settingsData.map.width
         mapHeight = settingsData.map.height
         radius = settingsData.map.radius
+        enabledMap = settingsData.map.enabledMap
         sampAddChatMessage("[SQH]: Map settings loaded.", 0x36c797)
     else
         sampAddChatMessage("[SQH]: Failed to load map settings, using defaults.", 0xFF0000)
@@ -228,7 +319,7 @@ end
 function saveMapPoints()
     local saveData = {}
     for _, point in ipairs(mapPoints) do
-      table.insert(saveData, {x = point.x, y = point.y})
+      table.insert(saveData, {x = point.x, y = point.y, r = point.r, g = point.g, b = point.b, a = point.a, facing = point.facing})
     end
   
     inicfg.save(saveData, pointsFilePath)
@@ -242,7 +333,8 @@ function loadMapPoints()
   
       for _, point in ipairs(loadedData) do
         if type(point.x) == "number" and type(point.y) == "number" then
-          table.insert(mapPoints, point)
+            table.insert(mapPoints, point)
+            -- sampAddChatMessage("obtained " ..mapPoints[1].x.. " " ..mapPoints[1].r.. " " ..mapPoints[1].facing.. "", -1)
         end
       end
     else
@@ -257,10 +349,9 @@ function imgui.OnDrawFrame()
     if isKeyJustPressed(0x1B) then  -- Escape key
         showMap.v = false  -- Close the map dialog
     end
-    if showMap.v or showMapKey.v then
+    if showMap.v or (showMapKey.v and enabledMap) then
         imgui.SetNextWindowSize(imgui.ImVec2(mapWidth + 20, mapHeight + 40), imgui.Cond.Always)
-        imgui.Begin(u8"Quest Helper by linux1337", showMap, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar)
-
+        imgui.Begin(u8"Quest Helper by linux1337", showMap, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar + (showMapKey.v and imgui.WindowFlags.NoInputs or 0))
         if mapTexture then
 
             local mapPosition = imgui.GetCursorScreenPos()
@@ -268,29 +359,56 @@ function imgui.OnDrawFrame()
 
             if imgui.IsItemClicked(0) then
                 local mousePos = imgui.GetMousePos()
-                local clickPos = {x = mousePos.x - mapPosition.x, y = mousePos.y - mapPosition.y}
+                local clickPos = {x = mousePos.x - mapPosition.x, y = mousePos.y - mapPosition.y, r = 1, g = 0, b = 0, a = 1, facing = 0}
                 if clickPos.x >= 0 and clickPos.x <= mapWidth and clickPos.y >= 0 and clickPos.y <= mapHeight then
                     table.insert(mapPoints, clickPos)
                     saveMapPoints()
                 end
             end
-            for _, point in ipairs(mapPoints) do
-                imgui.GetWindowDrawList():AddCircleFilled(
-                    imgui.ImVec2(mapPosition.x + point.x, mapPosition.y + point.y),
-                    radius,  -- Radius
-                    imgui.GetColorU32(imgui.ImVec4(1, 0, 0, 1))  -- Red color
-                )
-            end
+
             local cx, cy, cz = getCharCoordinates(PLAYER_PED)
-            if cx and cy then
+            if cx and cy and blipTexture then
                 local xn = (cx + 3000) / 6000
                 local yn = (3000 - cy) / 6000
                 local xp = xn * (mapWidth - 1)
                 local yp = yn * (mapHeight - 1)
+
+                -- Get the player's facing angle
+                local heading = getCharHeading(PLAYER_PED)  
+                local headingRadians = math.rad(heading)
+
+                -- Correct the heading by adding 180 degrees (π radians)
+                local correctedHeadingRadians = headingRadians
+
+                -- Calculate the rotated blip's corners for drawing
+                local blipSize = radius * 2
+                local halfSize = blipSize * 0.9
+                local cosH = math.cos(correctedHeadingRadians)
+                local sinH = -math.sin(correctedHeadingRadians)
+
+                -- Define each corner's position with the corrected rotation applied
+                local topLeft = imgui.ImVec2(mapPosition.x + xp - halfSize * cosH + halfSize * sinH, mapPosition.y + yp - halfSize * sinH - halfSize * cosH)
+                local topRight = imgui.ImVec2(mapPosition.x + xp + halfSize * cosH + halfSize * sinH, mapPosition.y + yp + halfSize * sinH - halfSize * cosH)
+                local bottomRight = imgui.ImVec2(mapPosition.x + xp + halfSize * cosH - halfSize * sinH, mapPosition.y + yp + halfSize * sinH + halfSize * cosH)
+                local bottomLeft = imgui.ImVec2(mapPosition.x + xp - halfSize * cosH - halfSize * sinH, mapPosition.y + yp - halfSize * sinH + halfSize * cosH)
+
+                -- Draw the blip texture with rotation
+                imgui.GetWindowDrawList():AddImageQuad(
+                    blipTexture,
+                    topLeft,
+                    topRight,
+                    bottomRight,
+                    bottomLeft
+                )
+            end
+
+
+            for _, point in ipairs(mapPoints) do
+                -- sampAddChatMessage("obtained " ..point.x.. " " ..point.y.. " " ..point.r.. " " ..point.g.. " " ..point.b.. " " ..point.a.. " "..point.facing, -1)
                 imgui.GetWindowDrawList():AddCircleFilled(
-                    imgui.ImVec2(mapPosition.x + xp, mapPosition.y + yp),
+                    imgui.ImVec2(mapPosition.x + point.x, mapPosition.y + point.y),
                     radius,  -- Radius
-                    imgui.GetColorU32(imgui.ImVec4(1, 1, 1, 1))  -- Red color
+                    imgui.GetColorU32(imgui.ImVec4(point.r, point.g, point.b, point.a))  -- Use color from point
                 )
             end
         else
